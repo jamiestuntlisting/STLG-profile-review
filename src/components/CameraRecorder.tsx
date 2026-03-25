@@ -190,9 +190,13 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
         }
 
         chunksRef.current = [];
-        const recorder = new MediaRecorder(canvasStream, {
-          mimeType: "video/webm;codecs=vp9",
-        });
+        // Prefer MP4 (H.264) if supported, fallback to WebM
+        const mimeType = MediaRecorder.isTypeSupported("video/mp4;codecs=avc1")
+          ? "video/mp4;codecs=avc1"
+          : MediaRecorder.isTypeSupported("video/mp4")
+            ? "video/mp4"
+            : "video/webm;codecs=vp9";
+        const recorder = new MediaRecorder(canvasStream, { mimeType });
 
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) chunksRef.current.push(e.data);
@@ -202,7 +206,9 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
           if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
           animFrameRef.current = null;
 
-          const blob = new Blob(chunksRef.current, { type: "video/webm" });
+          const isMP4 = mimeType.startsWith("video/mp4");
+          const ext = isMP4 ? "mp4" : "webm";
+          const blob = new Blob(chunksRef.current, { type: isMP4 ? "video/mp4" : "video/webm" });
           const url = URL.createObjectURL(blob);
           setBlobUrl(url);
           onRecordingComplete(url, blob);
@@ -211,7 +217,7 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
           // Auto-download the file
           const phonePart = performerPhone ? sanitizeFilename(performerPhone) : "no-phone";
           const namePart = performerName ? sanitizeFilename(performerName) : "unknown";
-          const filename = `${phonePart}-${namePart}.webm`;
+          const filename = `${phonePart}-${namePart}.${ext}`;
           const a = document.createElement("a");
           a.href = url;
           a.download = filename;
@@ -257,16 +263,7 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
       startRecording,
     }));
 
-    // Auto-start recording if prop is set
-    const autoStartedRef = useRef(false);
-    useEffect(() => {
-      if (autoStart && !autoStartedRef.current && state === "idle") {
-        autoStartedRef.current = true;
-        const timeout = setTimeout(() => startRecording(), 500);
-        return () => clearTimeout(timeout);
-      }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoStart]);
+    // Auto-start removed — admin clicks Record manually
 
     const reRecord = () => {
       if (blobUrl) URL.revokeObjectURL(blobUrl);
