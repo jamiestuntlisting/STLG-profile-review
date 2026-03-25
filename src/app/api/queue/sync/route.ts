@@ -63,6 +63,15 @@ function buildWhereConditions(filters: string[]): string[] {
       case "la":
         conditions.push("primaryLocationId = 2104");
         break;
+      case "chi":
+        conditions.push("primaryLocationId = 2099");
+        break;
+      case "us_other":
+        conditions.push("(primaryLocationId IN (2096,2100,2102,2103,2105,2107,2109,2110,2111,2112,2113,2115,2116,2117,2119,2120) OR (primaryLocationId >= 2095 AND primaryLocationId <= 2125 AND primaryLocationId NOT IN (2097,2099,2104,2114)))");
+        break;
+      case "international":
+        conditions.push("(primaryLocationId IS NOT NULL AND primaryLocationId < 2095)");
+        break;
       case "performers":
         conditions.push("role LIKE '%performer%'");
         break;
@@ -89,15 +98,24 @@ function buildWhereConditions(filters: string[]): string[] {
     }
   }
 
-  // Handle location filters as OR group (nyc OR atl OR la)
-  const locationFilters = filters.filter((f) => ["nyc", "atl", "la"].includes(f));
+  // Handle location filters as OR group
+  const locationKeys = ["nyc", "atl", "la", "chi", "us_other", "international"];
+  const locationFilters = filters.filter((f) => locationKeys.includes(f));
   if (locationFilters.length > 1) {
-    const locationMap: Record<string, number> = { nyc: 2114, atl: 2097, la: 2104 };
-    const locationIds = locationFilters.map((f) => locationMap[f]);
+    // Remove individual location conditions and combine as OR
+    const locationConditionParts: string[] = [];
+    const simpleLocationMap: Record<string, number> = { nyc: 2114, atl: 2097, la: 2104, chi: 2099 };
+    const simpleIds = locationFilters.filter((f) => f in simpleLocationMap).map((f) => simpleLocationMap[f]);
+    if (simpleIds.length > 0) locationConditionParts.push(`primaryLocationId IN (${simpleIds.join(",")})`);
+    if (locationFilters.includes("us_other")) locationConditionParts.push("(primaryLocationId >= 2095 AND primaryLocationId <= 2125 AND primaryLocationId NOT IN (2097,2099,2104,2114))");
+    if (locationFilters.includes("international")) locationConditionParts.push("(primaryLocationId IS NOT NULL AND primaryLocationId < 2095)");
+
     const nonLocationConditions = conditions.filter(
-      (c) => !c.startsWith("primaryLocationId =")
+      (c) => !c.includes("primaryLocationId")
     );
-    nonLocationConditions.push(`primaryLocationId IN (${locationIds.join(",")})`);
+    if (locationConditionParts.length > 0) {
+      nonLocationConditions.push(`(${locationConditionParts.join(" OR ")})`);
+    }
     return nonLocationConditions;
   }
 

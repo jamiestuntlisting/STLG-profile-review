@@ -44,9 +44,12 @@ const FILTER_GROUPS = [
   {
     label: "Location",
     filters: [
-      { key: "nyc", label: "NYC", description: "New York area", icon: "🗽" },
-      { key: "la", label: "LA", description: "Los Angeles area", icon: "🌴" },
-      { key: "atl", label: "ATL", description: "Atlanta area", icon: "🍑" },
+      { key: "la", label: "LA", description: "Los Angeles (1,749)", icon: "🌴" },
+      { key: "nyc", label: "NYC", description: "New York (1,454)", icon: "🗽" },
+      { key: "atl", label: "ATL", description: "Atlanta (1,194)", icon: "🍑" },
+      { key: "chi", label: "Chicago", description: "Chicago (126)", icon: "🌬️" },
+      { key: "us_other", label: "US Other", description: "All other US locations", icon: "🇺🇸" },
+      { key: "international", label: "International", description: "Outside the US", icon: "🌍" },
     ],
   },
   {
