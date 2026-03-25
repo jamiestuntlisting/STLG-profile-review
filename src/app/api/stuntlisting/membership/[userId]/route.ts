@@ -67,11 +67,15 @@ export async function GET(
           const subAny = sub as any;
           const periodEnd = subAny.current_period_end || subAny.currentPeriodEnd;
           const cancelAt = subAny.cancel_at_period_end ?? subAny.cancelAtPeriodEnd ?? false;
+          const canceledAt = subAny.canceled_at || subAny.canceledAt;
+          const endedAt = subAny.ended_at || subAny.endedAt;
           stripeSubscription = {
             id: sub.id,
             status: sub.status,
             currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
             cancelAtPeriodEnd: cancelAt,
+            canceledAt: canceledAt ? new Date(canceledAt * 1000).toISOString() : null,
+            endedAt: endedAt ? new Date(endedAt * 1000).toISOString() : null,
           };
           stripeStatus = sub.status;
           currentPeriodEnd = stripeSubscription.currentPeriodEnd;
@@ -111,6 +115,8 @@ export async function GET(
         stripeStatus,
         currentPeriodEnd,
         cancelAtPeriodEnd: stripeSubscription?.cancelAtPeriodEnd || false,
+        canceledAt: stripeSubscription?.canceledAt || null,
+        endedAt: stripeSubscription?.endedAt || null,
         features,
       },
     });

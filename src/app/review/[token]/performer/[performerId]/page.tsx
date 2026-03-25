@@ -237,27 +237,42 @@ export default function PerformerReviewPage() {
               />
             )}
             {activeTab === "reels" && performerReels.length > 0 && (
-              <div className="p-6 space-y-4">
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                  ⚠️ Note: Skill reels are self-reported and not independently verified.
+              <div className="p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {performerReels.map((reel, i) => {
+                    const reelUrl = reel.reel_url.startsWith("http") ? reel.reel_url : `https://stuntlisting-uploads-production.s3.amazonaws.com/${reel.reel_url}`;
+                    return (
+                      <a
+                        key={i}
+                        href={reelUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                      >
+                        <div className="relative bg-black aspect-video">
+                          <video
+                            src={reelUrl}
+                            className="w-full h-full object-cover"
+                            preload="metadata"
+                            muted
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                              <svg className="w-5 h-5 text-gray-800 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                        {reel.title && (
+                          <div className="px-3 py-2">
+                            <p className="text-xs font-medium text-gray-700 truncate">{reel.title}</p>
+                          </div>
+                        )}
+                      </a>
+                    );
+                  })}
                 </div>
-                {performerReels.map((reel, i) => (
-                  <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
-                    {reel.title && (
-                      <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                        <h4 className="text-sm font-medium text-gray-700">{reel.title}</h4>
-                      </div>
-                    )}
-                    <div className="bg-black">
-                      <video
-                        src={reel.reel_url.startsWith("http") ? reel.reel_url : `${process.env.NEXT_PUBLIC_UPLOADS_BASE || "https://stuntlisting-uploads-production.s3.amazonaws.com"}/${reel.reel_url}`}
-                        controls
-                        className="w-full max-h-[400px]"
-                        preload="metadata"
-                      />
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
             {activeTab === "status" && (

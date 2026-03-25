@@ -16,6 +16,8 @@ interface MembershipData {
   stripeStatus: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  canceledAt: string | null;
+  endedAt: string | null;
   features: Feature[];
 }
 
@@ -109,6 +111,12 @@ export default function MembershipTab({ stuntlistingUserId }: MembershipTabProps
               </span>
             )}
           </div>
+        )}
+
+        {membership.tier === "free" && (membership.canceledAt || membership.endedAt) && (
+          <p className="text-sm text-red-600 mt-2">
+            Canceled on {new Date(membership.canceledAt || membership.endedAt!).toLocaleDateString()}
+          </p>
         )}
 
         {!membership.stripeCustomerId && membership.tier === "free" && (
