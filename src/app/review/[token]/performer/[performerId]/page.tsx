@@ -336,12 +336,7 @@ export default function PerformerReviewPage() {
           <div className="p-6 border-t flex justify-end">
             <button
               onClick={handleNext}
-              disabled={!canProceed}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                canProceed
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
+              className="px-6 py-3 rounded-lg font-medium transition-all bg-blue-600 hover:bg-blue-700 text-white"
             >
               {currentIndex < allReviews.length - 1 ? "Next Performer \u2192" : "Finish Reviews"}
             </button>
