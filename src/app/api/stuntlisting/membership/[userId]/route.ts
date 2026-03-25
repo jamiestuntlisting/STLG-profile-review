@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 const ALL_FEATURES = [
   { key: "basic_profile", label: "Basic Profile", free: true, pro: true, premium: true },
   { key: "skill_listing", label: "Skill Listing", free: true, pro: true, premium: true },
-  { key: "contact_info", label: "Contact Info Visible", free: false, pro: true, premium: true },
+  { key: "contact_info", label: "Contact Info Visible", free: true, pro: true, premium: true },
   { key: "skill_reels", label: "Skill Reels", free: false, pro: true, premium: true },
   { key: "sponsored_headshots", label: "Sponsored Headshots", free: false, pro: false, premium: true },
   { key: "mobile_apps", label: "Mobile Apps", free: false, pro: true, premium: true },

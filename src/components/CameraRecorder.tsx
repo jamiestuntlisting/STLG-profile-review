@@ -77,10 +77,12 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
     const startRecording = async () => {
       setError(null);
       try {
-        // 1. Get screen capture
+        // 1. Get screen capture (preferCurrentTab auto-selects this tab)
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: { width: 1920, height: 1080, frameRate: 30 },
           audio: false,
+          // @ts-expect-error -- preferCurrentTab is supported in Chrome 94+
+          preferCurrentTab: true,
         });
         screenStreamRef.current = screenStream;
 
@@ -281,17 +283,10 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
       return `${m}:${s.toString().padStart(2, "0")}`;
     };
 
-    // Done state — show playback + re-record
-    if (state === "done" && blobUrl) {
+    // Done state — no preview, just status + redo
+    if (state === "done") {
       return (
         <div className="space-y-3">
-          <div className="rounded-lg overflow-hidden border border-green-200 bg-black">
-            <video
-              src={blobUrl}
-              controls
-              className="w-full max-h-64"
-            />
-          </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500" />
@@ -329,20 +324,11 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
           </button>
         )}
 
-        {/* Live canvas preview during recording */}
-        {state === "recording" && canvasRef.current && (
-          <div className="relative rounded-lg overflow-hidden border-2 border-red-400 bg-black">
-            <canvas
-              ref={canvasRef}
-              className="w-full max-h-48 object-contain"
-            />
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-xs font-medium text-white">REC</span>
-            </div>
-            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
-              <span className="text-xs font-mono font-medium text-white">{formatDuration(duration)}</span>
-            </div>
+        {/* Recording indicator */}
+        {state === "recording" && (
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-sm font-medium text-red-700">Recording screen...</span>
           </div>
         )}
 

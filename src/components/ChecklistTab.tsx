@@ -8,6 +8,7 @@ interface ChecklistData {
   hasStuntSkills: boolean;
   hasImdbLink: boolean;
   hasContactInfo: boolean;
+  hasResume: boolean;
   areSkillsRated: boolean;
   haveSkillDescriptions: boolean;
   meetsRequirements: boolean;
@@ -78,7 +79,7 @@ export default function ChecklistTab({ stuntlistingUserId }: ChecklistTabProps) 
           Listing Requirements
         </h3>
         <p className="text-xs text-gray-500 mb-4">
-          Path A: Stunt reel + Sizes + Stunt skills + Contact info
+          Path A: Stunt reel + Sizes + Stunt skills + Resume + Contact info
           <br />
           Path B: IMDb link with extensive credits + Contact info
         </p>
@@ -90,6 +91,7 @@ export default function ChecklistTab({ stuntlistingUserId }: ChecklistTabProps) 
         <CheckItem checked={checklist.hasStuntSkills} label="Stunt skills listed" />
         <CheckItem checked={checklist.areSkillsRated} label="Skills are rated" />
         <CheckItem checked={checklist.haveSkillDescriptions} label="Skill descriptions are detailed" />
+        <CheckItem checked={checklist.hasResume} label="Stunt resume uploaded" />
         <CheckItem checked={checklist.hasImdbLink} label="IMDb link provided" />
         <CheckItem checked={checklist.hasContactInfo} label="Contact info provided" />
       </div>

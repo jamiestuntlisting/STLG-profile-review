@@ -12,7 +12,7 @@ export async function GET(
 
     // Fetch user basics
     const [users] = await pool.query<RowDataPacket[]>(
-      "SELECT height, weight, imdb, email, phone_number FROM user WHERE id = ?",
+      "SELECT height, weight, imdb, email, phone_number, resume_cv FROM user WHERE id = ?",
       [userId]
     );
 
@@ -29,9 +29,9 @@ export async function GET(
     );
     const hasStuntReel = (reels[0]?.c || 0) > 0;
 
-    // Check stunt skills — also fetch details for rating/description checks
+    // Check stunt skills — fetch all columns to find descriptions
     const [skills] = await pool.query<RowDataPacket[]>(
-      "SELECT skill_name, level, category FROM skill_sets WHERE userId = ?",
+      "SELECT * FROM skill_sets WHERE userId = ?",
       [userId]
     );
     const hasStuntSkills = skills.length > 0;
@@ -41,19 +41,24 @@ export async function GET(
       (s) => s.level != null && String(s.level).trim() !== ""
     );
 
-    // Check if skill descriptions are detailed (category > 15 chars for most skills)
+    // Check if skills have descriptions — look for description/details/notes fields
+    // Fall back to category if no dedicated description column exists
+    const getDescription = (s: RowDataPacket): string => {
+      return String(s.description || s.details || s.notes || s.skill_description || "").trim();
+    };
     const skillsWithDescriptions = skills.filter(
-      (s) => s.category != null && String(s.category).trim().length > 15
+      (s) => getDescription(s).length > 10
     );
-    const haveSkillDescriptions = hasStuntSkills && skillsWithDescriptions.length >= Math.ceil(skills.length * 0.5);
+    const haveSkillDescriptions = hasStuntSkills && skillsWithDescriptions.length >= Math.ceil(skills.length * 0.3);
 
     const hasSizes = user.height != null && user.weight != null;
     const hasImdbLink = user.imdb != null && user.imdb.trim() !== "";
     const hasContactInfo = user.email != null && user.phone_number != null;
+    const hasResume = user.resume_cv != null && user.resume_cv.trim() !== "";
 
-    // Path A: stunt reel + sizes + skills + contact
+    // Path A: stunt reel + sizes + skills + resume + contact
     // Path B: IMDb with extensive credits + contact
-    const meetsPathA = hasStuntReel && hasSizes && hasStuntSkills && hasContactInfo;
+    const meetsPathA = hasStuntReel && hasSizes && hasStuntSkills && hasResume && hasContactInfo;
     const meetsPathB = hasImdbLink && hasContactInfo;
     const meetsRequirements = meetsPathA || meetsPathB;
 
@@ -64,6 +69,7 @@ export async function GET(
         hasStuntSkills,
         hasImdbLink,
         hasContactInfo,
+        hasResume,
         areSkillsRated,
         haveSkillDescriptions,
         meetsRequirements,

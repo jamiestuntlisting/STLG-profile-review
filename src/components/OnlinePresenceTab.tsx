@@ -36,7 +36,7 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
           personalWebsite: p.personalWebsite || null,
         });
 
-        // Auto-select the first available link to show in iframe
+        // Auto-select the first available link to show
         if (p.imdb) setActiveFrame("imdb");
         else if (p.instagram) setActiveFrame("instagram");
         else if (p.youtube) setActiveFrame("youtube");
@@ -83,9 +83,15 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
   // For IMDb, the "Open in new tab" link should go to the actual IMDb page
   const currentExternalUrl = activeFrame === "imdb" && links.imdb ? links.imdb : currentFrameUrl;
 
-  // Sites that block iframes via X-Frame-Options
+  // Sites that block iframes — show screenshot instead
   const noIframeKeys = new Set(["facebook", "youtube", "instagram", "twitter"]);
   const canIframe = activeFrame ? !noIframeKeys.has(activeFrame) : false;
+
+  // Generate screenshot URL for sites that block iframes
+  const getScreenshotUrl = (url: string) => {
+    // Use Google's PageSpeed screenshot API (free, no key needed)
+    return `https://image.thum.io/get/width/1280/crop/800/noanimate/${encodeURIComponent(url)}`;
+  };
 
   return (
     <div className="p-4">
@@ -136,21 +142,26 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
             />
           </div>
         ) : (
-          <div className="border border-gray-200 rounded-lg bg-gray-50 p-12 flex flex-col items-center justify-center text-center min-h-[300px]">
-            <span className={`w-16 h-16 rounded-xl text-white text-2xl font-bold flex items-center justify-center mb-4 ${currentLink.color}`}>
-              {currentLink.icon.length <= 2 ? currentLink.icon : currentLink.icon.substring(0, 2)}
-            </span>
-            <p className="text-gray-600 mb-1 text-sm">
-              {currentLink.label} cannot be previewed inline
-            </p>
+          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            {/* Screenshot of the page */}
             <a
               href={currentExternalUrl || currentLink.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              className="block"
             >
-              Open {currentLink.label} &rarr;
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                key={activeFrame}
+                src={getScreenshotUrl(currentLink.url)}
+                alt={`${currentLink.label} screenshot`}
+                className="w-full min-h-[300px] object-cover object-top bg-gray-100"
+                loading="lazy"
+              />
             </a>
+            <div className="p-3 border-t bg-gray-50 text-center">
+              <span className="text-xs text-gray-500">Click image to open {currentLink.label} in new tab</span>
+            </div>
           </div>
         )
       ) : (
