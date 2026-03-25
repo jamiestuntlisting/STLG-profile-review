@@ -64,11 +64,15 @@ export async function GET(
 
         if (subscriptions.data.length > 0) {
           const sub = subscriptions.data[0];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const subAny = sub as any;
+          const periodEnd = subAny.current_period_end || subAny.currentPeriodEnd;
+          const cancelAt = subAny.cancel_at_period_end ?? subAny.cancelAtPeriodEnd ?? false;
           stripeSubscription = {
             id: sub.id,
             status: sub.status,
-            currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
-            cancelAtPeriodEnd: sub.cancel_at_period_end,
+            currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+            cancelAtPeriodEnd: cancelAt,
           };
           stripeStatus = sub.status;
           currentPeriodEnd = stripeSubscription.currentPeriodEnd;
