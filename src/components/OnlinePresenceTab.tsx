@@ -83,6 +83,10 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
   // For IMDb, the "Open in new tab" link should go to the actual IMDb page
   const currentExternalUrl = activeFrame === "imdb" && links.imdb ? links.imdb : currentFrameUrl;
 
+  // Sites that block iframes via X-Frame-Options
+  const noIframeKeys = new Set(["facebook", "youtube", "instagram", "twitter"]);
+  const canIframe = activeFrame ? !noIframeKeys.has(activeFrame) : false;
+
   return (
     <div className="p-4">
       {/* Link buttons */}
@@ -119,17 +123,36 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
         </div>
       )}
 
-      {/* Iframe */}
-      {currentFrameUrl ? (
-        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-          <iframe
-            key={activeFrame}
-            src={currentFrameUrl}
-            className="w-full h-[500px] border-0"
-            title={`${activeFrame} profile`}
-            sandbox="allow-scripts allow-same-origin allow-popups"
-          />
-        </div>
+      {/* Content area */}
+      {currentLink ? (
+        canIframe ? (
+          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            <iframe
+              key={activeFrame}
+              src={currentFrameUrl!}
+              className="w-full h-[500px] border-0"
+              title={`${activeFrame} profile`}
+              sandbox="allow-scripts allow-same-origin allow-popups"
+            />
+          </div>
+        ) : (
+          <div className="border border-gray-200 rounded-lg bg-gray-50 p-12 flex flex-col items-center justify-center text-center min-h-[300px]">
+            <span className={`w-16 h-16 rounded-xl text-white text-2xl font-bold flex items-center justify-center mb-4 ${currentLink.color}`}>
+              {currentLink.icon.length <= 2 ? currentLink.icon : currentLink.icon.substring(0, 2)}
+            </span>
+            <p className="text-gray-600 mb-1 text-sm">
+              {currentLink.label} cannot be previewed inline
+            </p>
+            <a
+              href={currentExternalUrl || currentLink.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Open {currentLink.label} &rarr;
+            </a>
+          </div>
+        )
       ) : (
         <div className="p-8 text-center text-gray-500">
           Select a link above to view
