@@ -29,6 +29,8 @@ const FILTER_GROUPS = [
   {
     label: "Profile Status",
     filters: [
+      { key: "listed", label: "Listed", description: "Currently visible on StuntListing", icon: "✅" },
+      { key: "unlisted", label: "Unlisted", description: "Currently hidden on StuntListing", icon: "❌" },
       { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles nearly complete", icon: "🔒" },
       { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible but missing key info", icon: "🚧" },
       { key: "has_skill_reels", label: "Has Skill Reels", description: "Performers with skill reels uploaded", icon: "🎥" },

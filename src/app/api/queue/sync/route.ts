@@ -81,6 +81,12 @@ function buildWhereConditions(filters: string[]): string[] {
       case "performer_coordinator":
         conditions.push("(role LIKE '%performer%' AND role LIKE '%coordinator%')");
         break;
+      case "listed":
+        conditions.push("isVisible = 1");
+        break;
+      case "unlisted":
+        conditions.push("isVisible = 0");
+        break;
       case "unlisted_almost_complete":
         // Handled separately — just filter to unlisted users
         conditions.push("isVisible = 0");
