@@ -28,13 +28,6 @@ export async function POST(req: NextRequest) {
   login(email: $email, password: $password) {
     access_token
     refresh_token
-    user {
-      id
-      first_name
-      last_name
-      email
-      role
-    }
   }
 }`,
       }),
@@ -42,40 +35,23 @@ export async function POST(req: NextRequest) {
 
     const graphqlData = await graphqlRes.json();
 
-    if (graphqlData.errors || !graphqlData.data?.login) {
+    if (graphqlData.errors || !graphqlData.data?.login?.access_token) {
       const message = graphqlData.errors?.[0]?.message || "Invalid email or password";
       return NextResponse.json({ error: message }, { status: 401 });
     }
 
-    const loginData = graphqlData.data.login;
-    const stlUser = loginData.user;
+    // 2. Login succeeded — look up user details and role from MySQL
+    const pool = getPool();
+    const [users] = await pool.query<RowDataPacket[]>(
+      "SELECT id, first_name, last_name, email, role FROM user WHERE email = ? LIMIT 1",
+      [email]
+    );
 
-    // If the GraphQL response doesn't include user data, look up in MySQL
-    let userId = stlUser?.id;
-    let firstName = stlUser?.first_name;
-    let lastName = stlUser?.last_name;
-    let role = stlUser?.role;
-
-    if (!userId || !role) {
-      // Fall back to MySQL lookup
-      const pool = getPool();
-      const [users] = await pool.query<RowDataPacket[]>(
-        "SELECT id, first_name, last_name, email, role FROM user WHERE email = ? LIMIT 1",
-        [email]
-      );
-
-      if (users.length === 0) {
-        return NextResponse.json(
-          { error: "User not found" },
-          { status: 401 }
-        );
-      }
-
-      userId = users[0].id;
-      firstName = users[0].first_name;
-      lastName = users[0].last_name;
-      role = users[0].role;
+    if (users.length === 0) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
+
+    const { id: userId, first_name: firstName, last_name: lastName, role } = users[0];
 
     // 2. Check that user has admin role
     if (!role || !String(role).includes("admin")) {
