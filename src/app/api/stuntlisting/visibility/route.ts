@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
+import Admin from "@/lib/models/Admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,14 +13,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (accessToken) {
-      headers["Authorization"] = `Bearer ${accessToken}`;
+    // Get the access token — prefer passed token, fall back to looking it up from DB
+    let bearerToken = accessToken;
+    if (!bearerToken) {
+      await dbConnect();
+      const admin = await Admin.findOne({ stuntlistingUserId: adminUserId });
+      bearerToken = admin?.stuntlistingAccessToken;
+    }
+
+    if (!bearerToken) {
+      return NextResponse.json(
+        { error: "No StuntListing access token available. Please log out and log back in." },
+        { status: 401 }
+      );
     }
 
     const res = await fetch("https://api.stuntlisting.com/graphql", {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${bearerToken}`,
+      },
       body: JSON.stringify({
         operationName: "changeUserVisibility",
         variables: {
