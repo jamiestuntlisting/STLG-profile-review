@@ -65,18 +65,20 @@ export async function POST(req: NextRequest) {
     await dbConnect();
 
     const name = `${firstName} ${lastName}`;
+    const stlAccessToken = graphqlData.data.login.access_token;
+
     let admin = await Admin.findOne({ email });
     if (!admin) {
       admin = await Admin.create({
         name,
         email,
         stuntlistingUserId: userId,
+        stuntlistingAccessToken: stlAccessToken,
       });
     } else {
-      if (!admin.stuntlistingUserId) {
-        admin.stuntlistingUserId = userId;
-        await admin.save();
-      }
+      admin.stuntlistingUserId = userId;
+      admin.stuntlistingAccessToken = stlAccessToken;
+      await admin.save();
     }
 
     // Create a new session with 30-day token

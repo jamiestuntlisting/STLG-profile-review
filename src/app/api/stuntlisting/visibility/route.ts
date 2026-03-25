@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { adminUserId, targetUserId, isVisible } = await req.json();
+    const { adminUserId, targetUserId, isVisible, accessToken } = await req.json();
 
     if (!adminUserId || !targetUserId || typeof isVisible !== "boolean") {
       return NextResponse.json(
@@ -11,9 +11,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
     const res = await fetch("https://api.stuntlisting.com/graphql", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         operationName: "changeUserVisibility",
         variables: {

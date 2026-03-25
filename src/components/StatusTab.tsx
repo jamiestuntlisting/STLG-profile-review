@@ -6,6 +6,7 @@ interface StatusTabProps {
   reviewId: string;
   stuntlistingUserId: number;
   adminStuntlistingUserId?: number;
+  adminAccessToken?: string;
   currentStatus: string;
   currentListingDecision?: string;
   onStatusChange: (status: string, listingDecision: string) => void;
@@ -15,6 +16,7 @@ export default function StatusTab({
   reviewId,
   stuntlistingUserId,
   adminStuntlistingUserId,
+  adminAccessToken,
   currentStatus,
   currentListingDecision,
   onStatusChange,
@@ -59,6 +61,7 @@ export default function StatusTab({
             adminUserId: adminStuntlistingUserId,
             targetUserId: stuntlistingUserId,
             isVisible: decision === "listed",
+            accessToken: adminAccessToken,
           }),
         });
 

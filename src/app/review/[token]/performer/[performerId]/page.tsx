@@ -54,6 +54,7 @@ export default function PerformerReviewPage() {
   const [activeTab, setActiveTab] = useState("checklist");
   const [performerPhone, setPerformerPhone] = useState<string>("");
   const [adminStuntlistingUserId, setAdminStuntlistingUserId] = useState<number | undefined>();
+  const [adminAccessToken, setAdminAccessToken] = useState<string | undefined>();
   const [performerReels, setPerformerReels] = useState<{ reel_url: string; title: string }[]>([]);
   const cameraRecorderRef = useRef<CameraRecorderHandle>(null);
 
@@ -73,6 +74,9 @@ export default function PerformerReviewPage() {
         const authData = await authRes.json();
         if (authData.session?.admin?.stuntlistingUserId) {
           setAdminStuntlistingUserId(authData.session.admin.stuntlistingUserId);
+        }
+        if (authData.session?.admin?.stuntlistingAccessToken) {
+          setAdminAccessToken(authData.session.admin.stuntlistingAccessToken);
         }
 
         // Fetch all reviews for this session
@@ -280,6 +284,7 @@ export default function PerformerReviewPage() {
                 reviewId={review._id}
                 stuntlistingUserId={performer.stuntlistingUserId}
                 adminStuntlistingUserId={adminStuntlistingUserId}
+                adminAccessToken={adminAccessToken}
                 currentStatus={review.status}
                 currentListingDecision={review.listingDecision}
                 onStatusChange={(status, listingDecision) => {
