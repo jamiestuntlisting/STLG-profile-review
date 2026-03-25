@@ -16,14 +16,22 @@ const FILTER_GROUPS = [
     filters: [
       { key: "recent", label: "Recent & Unreviewed", description: "Newest performers not yet reviewed", icon: "🕐" },
       { key: "recently_signed_up", label: "Recently Signed Up", description: "Signed up in the last 30 days", icon: "🆕" },
-      { key: "free_previously_paid", label: "Free but Previously Paid", description: "Free accounts that once had a paid subscription", icon: "💳" },
+    ],
+  },
+  {
+    label: "Membership",
+    filters: [
+      { key: "current_standard", label: "Current Standard", description: "Active paying standard members", icon: "💎" },
+      { key: "free_previously_paid", label: "Previously Paid", description: "Free accounts that once paid", icon: "💳" },
+      { key: "never_paid", label: "Never Paid", description: "Never had a paid subscription", icon: "🆓" },
     ],
   },
   {
     label: "Profile Status",
     filters: [
-      { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles that are nearly complete", icon: "🔒" },
-      { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible profiles missing key information", icon: "🚧" },
+      { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles nearly complete", icon: "🔒" },
+      { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible but missing key info", icon: "🚧" },
+      { key: "has_skill_reels", label: "Has Skill Reels", description: "Performers with skill reels uploaded", icon: "🎥" },
     ],
   },
   {
@@ -36,9 +44,9 @@ const FILTER_GROUPS = [
   {
     label: "Location",
     filters: [
-      { key: "nyc", label: "NYC", description: "New York area performers", icon: "🗽" },
-      { key: "la", label: "LA", description: "Los Angeles area performers", icon: "🌴" },
-      { key: "atl", label: "ATL", description: "Atlanta area performers", icon: "🍑" },
+      { key: "nyc", label: "NYC", description: "New York area", icon: "🗽" },
+      { key: "la", label: "LA", description: "Los Angeles area", icon: "🌴" },
+      { key: "atl", label: "ATL", description: "Atlanta area", icon: "🍑" },
     ],
   },
   {

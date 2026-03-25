@@ -45,6 +45,15 @@ function buildWhereConditions(filters: string[]): string[] {
       case "free_previously_paid":
         conditions.push("(subscription_type = 'free' AND stripe_cus_id IS NOT NULL)");
         break;
+      case "current_standard":
+        conditions.push("(subscription_type IS NOT NULL AND subscription_type != 'free' AND stripe_cus_id IS NOT NULL)");
+        break;
+      case "never_paid":
+        conditions.push("(stripe_cus_id IS NULL)");
+        break;
+      case "has_skill_reels":
+        conditions.push("id IN (SELECT DISTINCT userId FROM stunt_reels)");
+        break;
       case "nyc":
         conditions.push("primaryLocationId = 2114");
         break;
