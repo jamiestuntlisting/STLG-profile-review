@@ -8,6 +8,8 @@ interface ChecklistData {
   hasStuntSkills: boolean;
   hasImdbLink: boolean;
   hasContactInfo: boolean;
+  areSkillsRated: boolean;
+  haveSkillDescriptions: boolean;
   meetsRequirements: boolean;
   pathA: boolean;
   pathB: boolean;
@@ -86,6 +88,8 @@ export default function ChecklistTab({ stuntlistingUserId }: ChecklistTabProps) 
         <CheckItem checked={checklist.hasStuntReel} label="Stunt reel uploaded" />
         <CheckItem checked={checklist.hasSizes} label="Sizes filled in (height, weight)" />
         <CheckItem checked={checklist.hasStuntSkills} label="Stunt skills listed" />
+        <CheckItem checked={checklist.areSkillsRated} label="Skills are rated" />
+        <CheckItem checked={checklist.haveSkillDescriptions} label="Skill descriptions are detailed" />
         <CheckItem checked={checklist.hasImdbLink} label="IMDb link provided" />
         <CheckItem checked={checklist.hasContactInfo} label="Contact info provided" />
       </div>

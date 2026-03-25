@@ -9,6 +9,7 @@ import ResumeTab from "@/components/ResumeTab";
 import ChecklistTab from "@/components/ChecklistTab";
 import OnlinePresenceTab from "@/components/OnlinePresenceTab";
 import StatusTab from "@/components/StatusTab";
+import MembershipTab from "@/components/MembershipTab";
 
 interface PerformerData {
   _id: string;
@@ -38,6 +39,7 @@ const TABS = [
   { id: "stuntlisting", label: "StuntListing" },
   { id: "resume", label: "Resume" },
   { id: "online", label: "Online" },
+  { id: "membership", label: "Membership" },
   { id: "status", label: "Status" },
 ];
 
@@ -57,6 +59,7 @@ export default function PerformerReviewPage() {
   const [canProceed, setCanProceed] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [activeTab, setActiveTab] = useState("checklist");
+  const [performerPhone, setPerformerPhone] = useState<string>("");
   const cameraRecorderRef = useRef<CameraRecorderHandle>(null);
 
   useEffect(() => {
@@ -99,6 +102,17 @@ export default function PerformerReviewPage() {
         const reviewRes = await fetch(`/api/reviews/${currentReview._id}`);
         const reviewData = await reviewRes.json();
         setReview(reviewData.review);
+
+        // Fetch phone number for recording filename
+        try {
+          const profileRes = await fetch(`/api/stuntlisting/profile/${reviewData.review.performerId.stuntlistingUserId}`);
+          const profileData = await profileRes.json();
+          if (profileData.profile?.phoneNumber) {
+            setPerformerPhone(profileData.profile.phoneNumber);
+          }
+        } catch {
+          // Non-critical — phone just won't be in filename
+        }
       } catch {
         console.error("Failed to load performer data");
       } finally {
@@ -113,36 +127,9 @@ export default function PerformerReviewPage() {
     setTimerDone(true);
   }, []);
 
-  const [uploading, setUploading] = useState(false);
-
-  const handleRecordingComplete = async (_blobUrl: string, blob: Blob) => {
+  const handleRecordingComplete = async (_blobUrl: string, _blob: Blob) => {
     setHasRecording(true);
-    if (!review) return;
-
-    // Upload the video file
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("video", blob, `review-${review._id}.webm`);
-      formData.append("reviewId", review._id);
-      formData.append("type", "review");
-
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      const uploadData = await uploadRes.json();
-
-      if (uploadRes.ok) {
-        // Save the video URL to the review
-        await fetch(`/api/reviews/${review._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ recordingUrl: uploadData.videoUrl }),
-        });
-      }
-    } catch (err) {
-      console.error("Upload failed:", err);
-    } finally {
-      setUploading(false);
-    }
+    // File auto-downloads via CameraRecorder on cut
   };
 
   const handleNext = () => {
@@ -261,6 +248,9 @@ export default function PerformerReviewPage() {
             {activeTab === "checklist" && (
               <ChecklistTab stuntlistingUserId={performer.stuntlistingUserId} />
             )}
+            {activeTab === "membership" && (
+              <MembershipTab stuntlistingUserId={performer.stuntlistingUserId} />
+            )}
           </div>
 
           {/* Completed badge */}
@@ -283,13 +273,9 @@ export default function PerformerReviewPage() {
               onRecordingComplete={handleRecordingComplete}
               onRecordingStateChange={setIsRecording}
               autoStart={autoRecord && review.status !== "completed"}
+              performerName={performer.name}
+              performerPhone={performerPhone}
             />
-            {uploading && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                Uploading recording...
-              </div>
-            )}
           </div>
 
           {/* Navigation */}

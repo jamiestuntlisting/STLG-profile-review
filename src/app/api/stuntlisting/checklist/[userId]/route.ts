@@ -29,12 +29,23 @@ export async function GET(
     );
     const hasStuntReel = (reels[0]?.c || 0) > 0;
 
-    // Check stunt skills
+    // Check stunt skills — also fetch details for rating/description checks
     const [skills] = await pool.query<RowDataPacket[]>(
-      "SELECT COUNT(*) as c FROM skill_sets WHERE userId = ?",
+      "SELECT skill_name, level, category FROM skill_sets WHERE userId = ?",
       [userId]
     );
-    const hasStuntSkills = (skills[0]?.c || 0) > 0;
+    const hasStuntSkills = skills.length > 0;
+
+    // Check if skills are rated (have a non-empty level)
+    const areSkillsRated = hasStuntSkills && skills.every(
+      (s) => s.level != null && String(s.level).trim() !== ""
+    );
+
+    // Check if skill descriptions are detailed (category > 15 chars for most skills)
+    const skillsWithDescriptions = skills.filter(
+      (s) => s.category != null && String(s.category).trim().length > 15
+    );
+    const haveSkillDescriptions = hasStuntSkills && skillsWithDescriptions.length >= Math.ceil(skills.length * 0.5);
 
     const hasSizes = user.height != null && user.weight != null;
     const hasImdbLink = user.imdb != null && user.imdb.trim() !== "";
@@ -53,6 +64,8 @@ export async function GET(
         hasStuntSkills,
         hasImdbLink,
         hasContactInfo,
+        areSkillsRated,
+        haveSkillDescriptions,
         meetsRequirements,
         pathA: meetsPathA,
         pathB: meetsPathB,
