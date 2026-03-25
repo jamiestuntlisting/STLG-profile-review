@@ -14,6 +14,7 @@ import MembershipTab from "@/components/MembershipTab";
 interface PerformerData {
   _id: string;
   name: string;
+  email: string;
   stuntlistingUserId: number;
   stuntlistingProfileUrl: string;
 }
@@ -212,6 +213,14 @@ export default function PerformerReviewPage() {
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <div className="p-6 border-b">
             <h1 className="text-2xl font-bold text-gray-900">{performer.name}</h1>
+            {performer.email && (
+              <a
+                href={`mailto:${performer.email}`}
+                className="text-gray-500 hover:text-gray-700 text-sm block"
+              >
+                {performer.email}
+              </a>
+            )}
             <a
               href={performer.stuntlistingProfileUrl}
               target="_blank"
