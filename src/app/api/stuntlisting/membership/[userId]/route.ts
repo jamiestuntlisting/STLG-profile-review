@@ -12,9 +12,8 @@ const ALL_FEATURES = [
   { key: "contact_info", label: "Contact Info Visible", free: true, pro: true, premium: true },
   { key: "skill_reels", label: "Skill Reels", free: false, pro: true, premium: true },
   { key: "sponsored_headshots", label: "Sponsored Headshots", free: false, pro: false, premium: true },
-  { key: "mobile_apps", label: "Mobile Apps", free: false, pro: true, premium: true },
-  { key: "priority_search", label: "Priority in Search", free: false, pro: true, premium: true },
-  { key: "verified_badge", label: "Verified Badge", free: false, pro: false, premium: true },
+  { key: "rate_calculator", label: "Rate Calculator", free: false, pro: true, premium: true },
+  { key: "quick_headshot", label: "Quick Headshot Tool", free: false, pro: true, premium: true },
 ];
 
 function determineTier(subscriptionType: string | null, stripeStatus: string | null): string {
