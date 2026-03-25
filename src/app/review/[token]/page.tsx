@@ -39,6 +39,7 @@ const FILTER_GROUPS = [
     filters: [
       { key: "performers", label: "Performers", description: "Users with performer role", icon: "🎬" },
       { key: "coordinators", label: "Coordinators", description: "Users with coordinator role", icon: "📋" },
+      { key: "performer_coordinator", label: "Performer / Coordinator", description: "Users with both roles", icon: "🎬📋" },
     ],
   },
   {
