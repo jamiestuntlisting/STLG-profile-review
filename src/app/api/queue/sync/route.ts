@@ -52,7 +52,7 @@ function buildWhereConditions(filters: string[]): string[] {
         conditions.push("(stripe_cus_id IS NULL)");
         break;
       case "has_skill_reels":
-        conditions.push("id IN (SELECT DISTINCT userId FROM stunt_reels)");
+        conditions.push("id IN (SELECT DISTINCT userId FROM skill_sets WHERE skill_url IS NOT NULL AND skill_url != '')");
         break;
       case "nyc":
         conditions.push("primaryLocationId = 2114");

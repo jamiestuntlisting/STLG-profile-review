@@ -56,7 +56,7 @@ export default function PerformerReviewPage() {
   const [performerPhone, setPerformerPhone] = useState<string>("");
   const [adminStuntlistingUserId, setAdminStuntlistingUserId] = useState<number | undefined>();
   const [adminAccessToken, setAdminAccessToken] = useState<string | undefined>();
-  const [performerReels, setPerformerReels] = useState<{ reel_url: string; title: string }[]>([]);
+  const [skillReels, setSkillReels] = useState<{ skillName: string; level: string; category: string; url: string }[]>([]);
   const cameraRecorderRef = useRef<CameraRecorderHandle>(null);
 
   useEffect(() => {
@@ -113,8 +113,8 @@ export default function PerformerReviewPage() {
           if (profileData.profile?.phoneNumber) {
             setPerformerPhone(profileData.profile.phoneNumber);
           }
-          if (profileData.profile?.reels?.length > 0) {
-            setPerformerReels(profileData.profile.reels);
+          if (profileData.profile?.skillReels?.length > 0) {
+            setSkillReels(profileData.profile.skillReels);
           }
         } catch {
           // Non-critical
@@ -235,7 +235,7 @@ export default function PerformerReviewPage() {
           <TabNav activeTab={activeTab} onTabChange={setActiveTab} tabs={[
             { id: "checklist", label: "Checklist" },
             { id: "stuntlisting", label: "StuntListing" },
-            ...(performerReels.length > 0 ? [{ id: "reels", label: "Skill Reels" }] : []),
+            ...(skillReels.length > 0 ? [{ id: "reels", label: "Skill Reels" }] : []),
             { id: "resume", label: "Resume" },
             { id: "online", label: "Online" },
             { id: "membership", label: "Membership" },
@@ -249,39 +249,42 @@ export default function PerformerReviewPage() {
                 title="StuntListing Profile"
               />
             )}
-            {activeTab === "reels" && performerReels.length > 0 && (
+            {activeTab === "reels" && skillReels.length > 0 && (
               <div className="p-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {performerReels.map((reel, i) => {
-                    const reelUrl = reel.reel_url.startsWith("http") ? reel.reel_url : `https://stuntlisting-uploads-production.s3.amazonaws.com/${reel.reel_url}`;
+                <p className="text-xs text-gray-500 mb-4">
+                  Skill reels are only visible to Standard and Plus members. These are video links attached to individual skills.
+                </p>
+                <div className="space-y-3">
+                  {skillReels.map((reel, i) => {
+                    // Extract YouTube video ID for thumbnail
+                    const ytMatch = reel.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+                    const ytId = ytMatch?.[1];
                     return (
                       <a
                         key={i}
-                        href={reelUrl}
+                        href={reel.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                        className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        <div className="relative bg-black aspect-video">
-                          <video
-                            src={reelUrl}
-                            className="w-full h-full object-cover"
-                            preload="metadata"
-                            muted
+                        {ytId ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
+                            alt=""
+                            className="w-32 h-20 object-cover rounded flex-shrink-0"
                           />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                              <svg className="w-5 h-5 text-gray-800 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                        {reel.title && (
-                          <div className="px-3 py-2">
-                            <p className="text-xs font-medium text-gray-700 truncate">{reel.title}</p>
+                        ) : (
+                          <div className="w-32 h-20 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                            <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
                           </div>
                         )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 text-sm">{reel.skillName}</p>
+                          <p className="text-xs text-gray-500">{reel.category} · {reel.level}</p>
+                          <p className="text-xs text-blue-600 truncate mt-1">{reel.url}</p>
+                        </div>
                       </a>
                     );
                   })}

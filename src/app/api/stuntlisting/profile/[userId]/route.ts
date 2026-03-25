@@ -35,17 +35,27 @@ export async function GET(
       [userId]
     );
 
-    // Fetch stunt skills
+    // Fetch stunt skills (all)
     const [skills] = await pool.query<RowDataPacket[]>(
-      "SELECT skill_name, level, category FROM skill_sets WHERE userId = ?",
+      "SELECT skill_name, level, category, description, skill_url FROM skill_sets WHERE userId = ?",
       [userId]
     );
 
-    // Fetch stunt reels
+    // Fetch stunt reels (full reels)
     const [reels] = await pool.query<RowDataPacket[]>(
       "SELECT reel_url, title FROM stunt_reels WHERE userId = ?",
       [userId]
     );
+
+    // Skill reels: skills that have a video link attached
+    const skillReels = skills
+      .filter((s: RowDataPacket) => s.skill_url && s.skill_url.trim() !== "")
+      .map((s: RowDataPacket) => ({
+        skillName: s.skill_name,
+        level: s.level,
+        category: s.category,
+        url: s.skill_url,
+      }));
 
     // Fetch actors doubled (via junction table)
     const [doubled] = await pool.query<RowDataPacket[]>(
@@ -111,6 +121,7 @@ export async function GET(
         isListed: user.isVisible === 1,
         skills,
         reels,
+        skillReels,
         doubledActors: doubled,
       },
     });
