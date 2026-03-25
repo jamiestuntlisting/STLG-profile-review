@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface StatusTabProps {
   reviewId: string;
   stuntlistingUserId: number;
+  adminStuntlistingUserId?: number;
   currentStatus: string;
   currentListingDecision?: string;
   onStatusChange: (status: string, listingDecision: string) => void;
@@ -13,6 +14,7 @@ interface StatusTabProps {
 export default function StatusTab({
   reviewId,
   stuntlistingUserId,
+  adminStuntlistingUserId,
   currentStatus,
   currentListingDecision,
   onStatusChange,
@@ -20,6 +22,7 @@ export default function StatusTab({
   const [listingDecision, setListingDecision] = useState<string>(currentListingDecision || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [dbStatus, setDbStatus] = useState<boolean | null>(null);
   const [loadingDb, setLoadingDb] = useState(true);
 
@@ -44,8 +47,31 @@ export default function StatusTab({
     setListingDecision(decision);
     setSaving(true);
     setSaved(false);
+    setError(null);
 
     try {
+      // 1. Update visibility on StuntListing via GraphQL
+      if (adminStuntlistingUserId) {
+        const visRes = await fetch("/api/stuntlisting/visibility", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            adminUserId: adminStuntlistingUserId,
+            targetUserId: stuntlistingUserId,
+            isVisible: decision === "listed",
+          }),
+        });
+
+        if (!visRes.ok) {
+          const visData = await visRes.json();
+          throw new Error(visData.error || "Failed to update on StuntListing");
+        }
+
+        // Update local status display
+        setDbStatus(decision === "listed");
+      }
+
+      // 2. Save decision to our review record
       const res = await fetch(`/api/reviews/${reviewId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -61,6 +87,7 @@ export default function StatusTab({
       }
     } catch (err) {
       console.error("Failed to save status:", err);
+      setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -101,7 +128,9 @@ export default function StatusTab({
       </h3>
 
       <p className="text-sm text-gray-600 mb-6">
-        Set this performer&apos;s listing status. This will also mark the review as completed.
+        {adminStuntlistingUserId
+          ? "This will update their listing status on StuntListing and mark the review as completed."
+          : "Set this performer\u2019s listing status. This will also mark the review as completed."}
       </p>
 
       <div className="flex gap-4">
@@ -139,17 +168,23 @@ export default function StatusTab({
       {saving && (
         <div className="mt-4 flex items-center justify-center gap-2 text-sm text-blue-600">
           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          Saving...
+          Updating StuntListing...
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-center text-sm text-red-700">
+          {error}
         </div>
       )}
 
       {saved && (
         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center text-sm text-green-700">
-          Saved! Review marked as completed.
+          ✅ Updated on StuntListing and review marked as completed.
         </div>
       )}
 
-      {isCompleted && listingDecision && !saved && (
+      {isCompleted && listingDecision && !saved && !error && (
         <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg text-center text-sm text-gray-600">
           Decision: <span className="font-semibold">{listingDecision.toUpperCase()}</span> — Review completed
         </div>

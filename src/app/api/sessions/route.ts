@@ -26,7 +26,7 @@ export async function GET() {
       }
 
       const token = generateToken();
-      const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const tokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       session = await ReviewSession.create({
         adminId: admin._id,
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     // Generate token and create session
     const token = generateToken();
-    const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const tokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 7 days
 
     const session = await ReviewSession.create({
       adminId: admin._id,

@@ -73,12 +73,16 @@ export async function POST(req: NextRequest) {
       admin = await Admin.create({
         name: `${user.first_name} ${user.last_name}`,
         email: user.email,
+        stuntlistingUserId: user.id,
       });
+    } else if (!admin.stuntlistingUserId) {
+      admin.stuntlistingUserId = user.id;
+      await admin.save();
     }
 
     // Create a new session with 7-day token
     const token = generateToken();
-    const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const tokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     await ReviewSession.create({
       adminId: admin._id,

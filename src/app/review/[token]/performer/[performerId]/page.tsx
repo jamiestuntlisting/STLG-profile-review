@@ -34,14 +34,7 @@ interface AllReview {
 
 const REVIEW_DURATION_SECONDS = 120; // 2 minutes
 
-const TABS = [
-  { id: "checklist", label: "Checklist" },
-  { id: "stuntlisting", label: "StuntListing" },
-  { id: "resume", label: "Resume" },
-  { id: "online", label: "Online" },
-  { id: "membership", label: "Membership" },
-  { id: "status", label: "Status" },
-];
+// Tabs are built dynamically based on whether performer has reels
 
 export default function PerformerReviewPage() {
   const params = useParams();
@@ -60,6 +53,8 @@ export default function PerformerReviewPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [activeTab, setActiveTab] = useState("checklist");
   const [performerPhone, setPerformerPhone] = useState<string>("");
+  const [adminStuntlistingUserId, setAdminStuntlistingUserId] = useState<number | undefined>();
+  const [performerReels, setPerformerReels] = useState<{ reel_url: string; title: string }[]>([]);
   const cameraRecorderRef = useRef<CameraRecorderHandle>(null);
 
   useEffect(() => {
@@ -76,6 +71,9 @@ export default function PerformerReviewPage() {
           return;
         }
         const authData = await authRes.json();
+        if (authData.session?.admin?.stuntlistingUserId) {
+          setAdminStuntlistingUserId(authData.session.admin.stuntlistingUserId);
+        }
 
         // Fetch all reviews for this session
         const reviewsRes = await fetch(`/api/reviews?sessionId=${authData.session.id}`);
@@ -103,15 +101,18 @@ export default function PerformerReviewPage() {
         const reviewData = await reviewRes.json();
         setReview(reviewData.review);
 
-        // Fetch phone number for recording filename
+        // Fetch phone number and reels for recording filename and reels tab
         try {
           const profileRes = await fetch(`/api/stuntlisting/profile/${reviewData.review.performerId.stuntlistingUserId}`);
           const profileData = await profileRes.json();
           if (profileData.profile?.phoneNumber) {
             setPerformerPhone(profileData.profile.phoneNumber);
           }
+          if (profileData.profile?.reels?.length > 0) {
+            setPerformerReels(profileData.profile.reels);
+          }
         } catch {
-          // Non-critical — phone just won't be in filename
+          // Non-critical
         }
       } catch {
         console.error("Failed to load performer data");
@@ -218,7 +219,15 @@ export default function PerformerReviewPage() {
           </div>
 
           {/* Tabbed content area */}
-          <TabNav activeTab={activeTab} onTabChange={setActiveTab} tabs={TABS} />
+          <TabNav activeTab={activeTab} onTabChange={setActiveTab} tabs={[
+            { id: "checklist", label: "Checklist" },
+            { id: "stuntlisting", label: "StuntListing" },
+            ...(performerReels.length > 0 ? [{ id: "reels", label: "Skill Reels" }] : []),
+            { id: "resume", label: "Resume" },
+            { id: "online", label: "Online" },
+            { id: "membership", label: "Membership" },
+            { id: "status", label: "Status" },
+          ]} />
           <div className="min-h-[300px]">
             {activeTab === "stuntlisting" && (
               <iframe
@@ -227,10 +236,35 @@ export default function PerformerReviewPage() {
                 title="StuntListing Profile"
               />
             )}
+            {activeTab === "reels" && performerReels.length > 0 && (
+              <div className="p-6 space-y-4">
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                  ⚠️ Note: Skill reels are self-reported and not independently verified.
+                </div>
+                {performerReels.map((reel, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {reel.title && (
+                      <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                        <h4 className="text-sm font-medium text-gray-700">{reel.title}</h4>
+                      </div>
+                    )}
+                    <div className="bg-black">
+                      <video
+                        src={reel.reel_url.startsWith("http") ? reel.reel_url : `${process.env.NEXT_PUBLIC_UPLOADS_BASE || "https://stuntlisting-uploads-production.s3.amazonaws.com"}/${reel.reel_url}`}
+                        controls
+                        className="w-full max-h-[400px]"
+                        preload="metadata"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {activeTab === "status" && (
               <StatusTab
                 reviewId={review._id}
                 stuntlistingUserId={performer.stuntlistingUserId}
+                adminStuntlistingUserId={adminStuntlistingUserId}
                 currentStatus={review.status}
                 currentListingDecision={review.listingDecision}
                 onStatusChange={(status, listingDecision) => {
