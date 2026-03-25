@@ -39,6 +39,9 @@ function buildWhereConditions(filters: string[]): string[] {
     switch (filter) {
       case "recent":
         break;
+      case "recently_signed_up":
+        conditions.push("created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+        break;
       case "free_previously_paid":
         conditions.push("(subscription_type = 'free' AND stripe_cus_id IS NOT NULL)");
         break;

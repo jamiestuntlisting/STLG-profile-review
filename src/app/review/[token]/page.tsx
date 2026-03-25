@@ -10,78 +10,44 @@ interface SessionData {
   };
 }
 
-const FILTERS = [
+const FILTER_GROUPS = [
   {
-    key: "recent",
-    label: "Recent & Unreviewed",
-    description: "Newest performers not yet reviewed",
-    icon: "🕐",
+    label: "Activity",
+    filters: [
+      { key: "recent", label: "Recent & Unreviewed", description: "Newest performers not yet reviewed", icon: "🕐" },
+      { key: "recently_signed_up", label: "Recently Signed Up", description: "Signed up in the last 30 days", icon: "🆕" },
+      { key: "free_previously_paid", label: "Free but Previously Paid", description: "Free accounts that once had a paid subscription", icon: "💳" },
+    ],
   },
   {
-    key: "free_previously_paid",
-    label: "Free but Previously Paid",
-    description: "Free accounts that once had a paid subscription",
-    icon: "💳",
+    label: "Profile Status",
+    filters: [
+      { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles that are nearly complete", icon: "🔒" },
+      { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible profiles missing key information", icon: "🚧" },
+    ],
   },
   {
-    key: "nyc",
-    label: "NYC",
-    description: "New York area performers",
-    icon: "🗽",
+    label: "Role",
+    filters: [
+      { key: "performers", label: "Performers", description: "Users with performer role", icon: "🎬" },
+      { key: "coordinators", label: "Coordinators", description: "Users with coordinator role", icon: "📋" },
+    ],
   },
   {
-    key: "atl",
-    label: "ATL",
-    description: "Atlanta area performers",
-    icon: "🍑",
+    label: "Location",
+    filters: [
+      { key: "nyc", label: "NYC", description: "New York area performers", icon: "🗽" },
+      { key: "la", label: "LA", description: "Los Angeles area performers", icon: "🌴" },
+      { key: "atl", label: "ATL", description: "Atlanta area performers", icon: "🍑" },
+    ],
   },
   {
-    key: "la",
-    label: "LA",
-    description: "Los Angeles area performers",
-    icon: "🌴",
-  },
-  {
-    key: "performers",
-    label: "Performers",
-    description: "Users with performer role",
-    icon: "🎬",
-  },
-  {
-    key: "coordinators",
-    label: "Coordinators",
-    description: "Users with coordinator role",
-    icon: "📋",
-  },
-  {
-    key: "unlisted_almost_complete",
-    label: "Unlisted, Almost Complete",
-    description: "Hidden profiles that are nearly complete",
-    icon: "🔒",
-  },
-  {
-    key: "listed_mostly_incomplete",
-    label: "Listed, Mostly Incomplete",
-    description: "Visible profiles missing key information",
-    icon: "🚧",
-  },
-  {
-    key: "non_union",
-    label: "Non Union",
-    description: "Performers with no union affiliation",
-    icon: "🚫",
-  },
-  {
-    key: "sag_eligible",
-    label: "SAG Eligible",
-    description: "SAG-eligible performers",
-    icon: "🎫",
-  },
-  {
-    key: "sag",
-    label: "SAG",
-    description: "SAG-AFTRA members",
-    icon: "⭐",
+    label: "Union Status",
+    filters: [
+      { key: "non_union", label: "Non Union", description: "No union affiliation", icon: "🚫" },
+      { key: "sag_eligible", label: "SAG Eligible", description: "SAG-eligible performers", icon: "🎫" },
+      { key: "sag", label: "SAG", description: "SAG-AFTRA members", icon: "⭐" },
+    ],
   },
 ];
 
@@ -180,35 +146,44 @@ export default function QueueBuilderPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {FILTERS.map((filter) => {
-            const isSelected = selected.has(filter.key);
-            return (
-              <button
-                key={filter.key}
-                onClick={() => toggleFilter(filter.key)}
-                disabled={syncing}
-                className={`relative flex flex-col items-center justify-center p-6 rounded-xl shadow-sm border transition-all text-center ${
-                  isSelected
-                    ? "bg-blue-50 ring-2 ring-blue-500 border-blue-500"
-                    : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-md"
-                } ${syncing ? "opacity-50" : ""}`}
-              >
-                <span className="text-3xl mb-3">{filter.icon}</span>
-                <span className={`font-semibold text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
-                  {filter.label}
-                </span>
-                <span className="text-xs text-gray-500 mt-1">{filter.description}</span>
-                {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                )}
-              </button>
-            );
-          })}
+        <div className="space-y-6">
+          {FILTER_GROUPS.map((group) => (
+            <div key={group.label}>
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">
+                {group.label}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {group.filters.map((filter) => {
+                  const isSelected = selected.has(filter.key);
+                  return (
+                    <button
+                      key={filter.key}
+                      onClick={() => toggleFilter(filter.key)}
+                      disabled={syncing}
+                      className={`relative flex flex-col items-center justify-center p-5 rounded-xl shadow-sm border transition-all text-center ${
+                        isSelected
+                          ? "bg-blue-50 ring-2 ring-blue-500 border-blue-500"
+                          : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-md"
+                      } ${syncing ? "opacity-50" : ""}`}
+                    >
+                      <span className="text-2xl mb-2">{filter.icon}</span>
+                      <span className={`font-semibold text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
+                        {filter.label}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">{filter.description}</span>
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Build Queue button */}
