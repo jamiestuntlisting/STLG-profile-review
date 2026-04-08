@@ -24,6 +24,7 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
     const [duration, setDuration] = useState(0);
     const [blobUrl, setBlobUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
 
     const screenStreamRef = useRef<MediaStream | null>(null);
     const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -99,6 +100,7 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
           audio: true,
         });
         cameraStreamRef.current = cameraStream;
+        setCameraStream(cameraStream);
 
         // 3. Set up hidden video elements for drawing
         const screenVideo = document.createElement("video");
@@ -230,6 +232,7 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
           cameraStreamRef.current?.getTracks().forEach((t) => t.stop());
           screenStreamRef.current = null;
           cameraStreamRef.current = null;
+          setCameraStream(null);
         };
 
         recorder.start(1000);
@@ -309,6 +312,26 @@ const CameraRecorder = forwardRef<CameraRecorderHandle, CameraRecorderProps>(
       <div className="space-y-3">
         {/* Hidden canvas for compositing */}
         <canvas ref={canvasRef} className="hidden" />
+
+        {/* Live webcam preview circle — fixed bottom-right during recording */}
+        {state === "recording" && cameraStream && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-red-500 shadow-lg">
+              <video
+                autoPlay
+                playsInline
+                muted
+                ref={(el) => {
+                  if (el && el.srcObject !== cameraStream) {
+                    el.srcObject = cameraStream;
+                  }
+                }}
+                className="w-full h-full object-cover scale-x-[-1]"
+              />
+            </div>
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 animate-pulse border-2 border-white" />
+          </div>
+        )}
 
         {/* Record button in idle state */}
         {state === "idle" && !error && (
