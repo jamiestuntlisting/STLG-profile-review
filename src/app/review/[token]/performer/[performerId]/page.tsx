@@ -10,6 +10,7 @@ import ChecklistTab from "@/components/ChecklistTab";
 import OnlinePresenceTab from "@/components/OnlinePresenceTab";
 import StatusTab from "@/components/StatusTab";
 import MembershipTab from "@/components/MembershipTab";
+import ContactTab from "@/components/ContactTab";
 
 interface PerformerData {
   _id: string;
@@ -254,6 +255,7 @@ export default function PerformerReviewPage() {
             { id: "online", label: "Online" },
             { id: "membership", label: "Membership" },
             { id: "status", label: "Status" },
+            { id: "contact", label: "Contact" },
           ]} />
           <div className="min-h-[300px]">
             {/* StuntListing iframe is always rendered but hidden when not active, so it preloads */}
@@ -331,6 +333,13 @@ export default function PerformerReviewPage() {
             )}
             {activeTab === "membership" && (
               <MembershipTab stuntlistingUserId={performer.stuntlistingUserId} />
+            )}
+            {activeTab === "contact" && (
+              <ContactTab
+                performerName={performer.name}
+                email={performer.email}
+                phone={performerPhone}
+              />
             )}
           </div>
 

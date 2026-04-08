@@ -63,32 +63,30 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
 
   const googleSearchUrl = `https://www.google.com/search?igu=1&q=${encodeURIComponent(performerName + " stunt performer")}`;
 
-  // Sites that must open in a new tab (they block iframes entirely)
-  const newTabOnly = new Set(["imdb", "facebook", "youtube", "instagram", "twitter"]);
+  // Only IMDb must open in a new tab (blocks iframes and Google Search hits challenge limits)
+  const newTabOnly = new Set(["imdb"]);
+
+  const ensureUrl = (url: string) => url.startsWith("http") ? url : `https://${url}`;
 
   const allLinks = [
     { key: "google", label: "Google", url: googleSearchUrl, icon: "G", color: "bg-blue-500" },
-    links.imdb && { key: "imdb", label: "IMDb", url: links.imdb.startsWith("http") ? links.imdb : `https://${links.imdb}`, icon: "IMDb", color: "bg-yellow-500" },
-    links.instagram && { key: "instagram", label: "Instagram", url: links.instagram.startsWith("http") ? links.instagram : `https://${links.instagram}`, icon: "IG", color: "bg-pink-500" },
-    links.facebook && { key: "facebook", label: "Facebook", url: links.facebook.startsWith("http") ? links.facebook : `https://${links.facebook}`, icon: "FB", color: "bg-blue-600" },
-    links.youtube && { key: "youtube", label: "YouTube", url: links.youtube.startsWith("http") ? links.youtube : `https://${links.youtube}`, icon: "YT", color: "bg-red-600" },
-    links.twitter && { key: "twitter", label: "X/Twitter", url: links.twitter.startsWith("http") ? links.twitter : `https://${links.twitter}`, icon: "X", color: "bg-gray-900" },
-    links.personalWebsite && { key: "website", label: "Website", url: links.personalWebsite.startsWith("http") ? links.personalWebsite : `https://${links.personalWebsite}`, icon: "W", color: "bg-green-600" },
+    links.imdb && { key: "imdb", label: "IMDb", url: ensureUrl(links.imdb), icon: "IMDb", color: "bg-yellow-500" },
+    links.instagram && { key: "instagram", label: "Instagram", url: ensureUrl(links.instagram), icon: "IG", color: "bg-pink-500" },
+    links.facebook && { key: "facebook", label: "Facebook", url: ensureUrl(links.facebook), icon: "FB", color: "bg-blue-600" },
+    links.youtube && { key: "youtube", label: "YouTube", url: ensureUrl(links.youtube), icon: "YT", color: "bg-red-600" },
+    links.twitter && { key: "twitter", label: "X/Twitter", url: ensureUrl(links.twitter), icon: "X", color: "bg-gray-900" },
+    links.personalWebsite && { key: "website", label: "Website", url: ensureUrl(links.personalWebsite), icon: "W", color: "bg-green-600" },
   ].filter(Boolean) as { key: string; label: string; url: string; icon: string; color: string }[];
 
   const currentLink = activeFrame ? allLinks.find((l) => l.key === activeFrame) : null;
   const currentFrameUrl = currentLink?.url || null;
   const isNewTabOnly = activeFrame ? newTabOnly.has(activeFrame) : false;
-  const canIframe = activeFrame ? !isNewTabOnly && activeFrame !== "website" : false;
 
   const handleLinkClick = (link: { key: string; url: string }) => {
     if (newTabOnly.has(link.key)) {
-      // Open directly in new tab — these sites block iframes
       window.open(link.url, "_blank", "noopener,noreferrer");
-      setActiveFrame(link.key);
-    } else {
-      setActiveFrame(link.key);
     }
+    setActiveFrame(link.key);
   };
 
   return (
@@ -151,7 +149,7 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
               Open {currentLink.label} again &rarr;
             </a>
           </div>
-        ) : canIframe ? (
+        ) : (
           <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
             <iframe
               key={activeFrame}
@@ -160,17 +158,6 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
               title={`${activeFrame} profile`}
               sandbox="allow-scripts allow-same-origin allow-popups"
             />
-          </div>
-        ) : (
-          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white p-8 text-center">
-            <a
-              href={currentLink.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              Open {currentLink.label} in new tab &rarr;
-            </a>
           </div>
         )
       ) : (
