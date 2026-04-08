@@ -256,13 +256,14 @@ export default function PerformerReviewPage() {
             { id: "status", label: "Status" },
           ]} />
           <div className="min-h-[300px]">
-            {activeTab === "stuntlisting" && (
+            {/* StuntListing iframe is always rendered but hidden when not active, so it preloads */}
+            <div className={activeTab === "stuntlisting" ? "" : "hidden"}>
               <iframe
                 src={`https://www.stuntlisting.com/profile/${performer.stuntlistingUserId}`}
                 className="w-full h-[600px] border-0"
                 title="StuntListing Profile"
               />
-            )}
+            </div>
             {activeTab === "reels" && skillReels.length > 0 && (
               <div className="p-6">
                 <p className="text-xs text-gray-500 mb-4">
