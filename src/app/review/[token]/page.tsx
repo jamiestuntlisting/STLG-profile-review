@@ -14,54 +14,54 @@ const FILTER_GROUPS = [
   {
     label: "Activity",
     filters: [
-      { key: "recent", label: "Recent & Unreviewed", description: "Newest performers not yet reviewed", icon: "🕐" },
-      { key: "recently_signed_up", label: "Recently Signed Up", description: "Signed up in the last 30 days", icon: "🆕" },
+      { key: "recent", label: "Recent & Unreviewed", description: "Newest performers not yet reviewed" },
+      { key: "recently_signed_up", label: "Recently Signed Up", description: "Signed up in the last 30 days" },
     ],
   },
   {
     label: "Membership",
     filters: [
-      { key: "current_standard", label: "Current Standard", description: "Active paying standard members", icon: "💎" },
-      { key: "free_previously_paid", label: "Previously Paid", description: "Free accounts that once paid", icon: "💳" },
-      { key: "never_paid", label: "Never Paid", description: "Never had a paid subscription", icon: "🆓" },
+      { key: "current_standard", label: "Current Standard", description: "Active paying standard members" },
+      { key: "free_previously_paid", label: "Previously Paid", description: "Free accounts that once paid" },
+      { key: "never_paid", label: "Never Paid", description: "Never had a paid subscription" },
     ],
   },
   {
     label: "Profile Status",
     filters: [
-      { key: "listed", label: "Listed", description: "Currently visible on StuntListing", icon: "✅" },
-      { key: "unlisted", label: "Unlisted", description: "Currently hidden on StuntListing", icon: "❌" },
-      { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles nearly complete", icon: "🔒" },
-      { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible but missing key info", icon: "🚧" },
-      { key: "has_skill_reels", label: "Has Skill Reels", description: "Performers with skill reels uploaded", icon: "🎥" },
+      { key: "listed", label: "Listed", description: "Currently visible on StuntListing" },
+      { key: "unlisted", label: "Unlisted", description: "Currently hidden on StuntListing" },
+      { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles nearly complete" },
+      { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible but missing key info" },
+      { key: "has_skill_reels", label: "Has Skill Reels", description: "Performers with skill reels uploaded" },
     ],
   },
   {
     label: "Role",
     filters: [
-      { key: "performers", label: "Performers", description: "Users with performer role", icon: "🎬" },
-      { key: "coordinators", label: "Coordinators", description: "Users with coordinator role", icon: "📋" },
-      { key: "performer_coordinator", label: "Performer / Coordinator", description: "Users with both roles", icon: "🎬📋" },
-      { key: "stuntlisting_admins", label: "StuntListing Admins", description: "Admin accounts for testing", icon: "🔧" },
+      { key: "performers", label: "Performers", description: "Users with performer role" },
+      { key: "coordinators", label: "Coordinators", description: "Users with coordinator role" },
+      { key: "performer_coordinator", label: "Performer / Coordinator", description: "Users with both roles" },
+      { key: "stuntlisting_admins", label: "StuntListing Admins", description: "Admin accounts for testing" },
     ],
   },
   {
     label: "Location",
     filters: [
-      { key: "la", label: "LA", description: "Los Angeles (1,749)", icon: "🌴" },
-      { key: "nyc", label: "NYC", description: "New York (1,454)", icon: "🗽" },
-      { key: "atl", label: "ATL", description: "Atlanta (1,194)", icon: "🍑" },
-      { key: "chi", label: "Chicago", description: "Chicago (126)", icon: "🌬️" },
-      { key: "us_other", label: "US Other", description: "All other US locations", icon: "🇺🇸" },
-      { key: "international", label: "International", description: "Outside the US", icon: "🌍" },
+      { key: "la", label: "LA", description: "Los Angeles (1,749)" },
+      { key: "nyc", label: "NYC", description: "New York (1,454)" },
+      { key: "atl", label: "ATL", description: "Atlanta (1,194)" },
+      { key: "chi", label: "Chicago", description: "Chicago (126)" },
+      { key: "us_other", label: "US Other", description: "All other US locations" },
+      { key: "international", label: "International", description: "Outside the US" },
     ],
   },
   {
     label: "Union Status",
     filters: [
-      { key: "non_union", label: "Non Union", description: "No union affiliation", icon: "🚫" },
-      { key: "sag_eligible", label: "SAG Eligible", description: "SAG-eligible performers", icon: "🎫" },
-      { key: "sag", label: "SAG", description: "SAG-AFTRA members", icon: "⭐" },
+      { key: "non_union", label: "Non Union", description: "No union affiliation" },
+      { key: "sag_eligible", label: "SAG Eligible", description: "SAG-eligible performers" },
+      { key: "sag", label: "SAG", description: "SAG-AFTRA members" },
     ],
   },
 ];
@@ -162,7 +162,7 @@ export default function QueueBuilderPage() {
         </div>
 
         {error && (
-          <div className={`mb-6 p-3 rounded-lg text-center text-sm ${
+          <div className={`mb-6 p-4 rounded-lg text-center text-base ${
             error.includes("No performers")
               ? "bg-yellow-50 border border-yellow-200 text-yellow-800"
               : "bg-red-50 border border-red-200 text-red-700"
@@ -171,10 +171,11 @@ export default function QueueBuilderPage() {
           </div>
         )}
 
-        <div className="space-y-6">
-          {FILTER_GROUPS.map((group) => (
+        <div className="space-y-10">
+          {FILTER_GROUPS.map((group, i) => (
             <div key={group.label}>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">
+              {i > 0 && <hr className="border-gray-200 mb-8" />}
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 px-1">
                 {group.label}
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -191,11 +192,10 @@ export default function QueueBuilderPage() {
                           : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-md"
                       } ${syncing ? "opacity-50" : ""}`}
                     >
-                      <span className="text-2xl mb-2">{filter.icon}</span>
-                      <span className={`font-semibold text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
+                      <span className={`font-semibold text-base ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
                         {filter.label}
                       </span>
-                      <span className="text-xs text-gray-500 mt-1">{filter.description}</span>
+                      <span className="text-sm text-gray-500 mt-1">{filter.description}</span>
                       {isSelected && (
                         <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,6 +213,17 @@ export default function QueueBuilderPage() {
 
         {/* Build Queue button */}
         <div className="mt-8 text-center">
+          {error && (
+            <div className={`mb-4 p-4 rounded-lg text-center text-base ${
+              error.includes("No performers")
+                ? "bg-yellow-50 border border-yellow-200 text-yellow-800"
+                : "bg-red-50 border border-red-200 text-red-700"
+            }`}>
+              {error}
+            </div>
+          )}
+        </div>
+        <div className="text-center">
           <button
             onClick={handleBuildQueue}
             disabled={selected.size === 0 || syncing}
