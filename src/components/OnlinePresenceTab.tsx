@@ -63,8 +63,8 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
 
   const googleSearchUrl = `https://www.google.com/search?igu=1&q=${encodeURIComponent(performerName + " stunt performer")}`;
 
-  // Only IMDb must open in a new tab (blocks iframes and Google Search hits challenge limits)
-  const newTabOnly = new Set(["imdb"]);
+  // Sites that open in a new tab (they block iframes)
+  const newTabOnly = new Set(["imdb", "instagram", "facebook", "youtube", "twitter"]);
 
   const ensureUrl = (url: string) => url.startsWith("http") ? url : `https://${url}`;
 
@@ -139,6 +139,9 @@ export default function OnlinePresenceTab({ stuntlistingUserId, performerName }:
           <div className="border border-gray-200 rounded-lg overflow-hidden bg-white p-8 text-center">
             <p className="text-gray-600 mb-3">
               {currentLink.label} has been opened in a new tab.
+            </p>
+            <p className="text-xs text-amber-600 mb-3">
+              Not visible from recording
             </p>
             <a
               href={currentLink.url}
