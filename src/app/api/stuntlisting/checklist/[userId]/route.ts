@@ -57,10 +57,10 @@ export async function GET(
     const hasResume = user.resume_cv != null && user.resume_cv.trim() !== "";
 
     // Path A: stunt reel + sizes + skills + resume + contact
-    // Path B: IMDb with extensive credits + contact
+    // Path B: IMDb with extensive credits + contact (eligible but not confirmed — needs manual review)
     const meetsPathA = hasStuntReel && hasSizes && hasStuntSkills && hasResume && hasContactInfo;
-    const meetsPathB = hasImdbLink && hasContactInfo;
-    const meetsRequirements = meetsPathA || meetsPathB;
+    const pathBEligible = hasImdbLink && hasContactInfo;
+    const meetsRequirements = meetsPathA; // Path B alone is "maybe" — requires manual verification
 
     return NextResponse.json({
       checklist: {
@@ -74,7 +74,8 @@ export async function GET(
         haveSkillDescriptions,
         meetsRequirements,
         pathA: meetsPathA,
-        pathB: meetsPathB,
+        pathB: false,
+        pathBMaybe: pathBEligible,
       },
     });
   } catch (error) {

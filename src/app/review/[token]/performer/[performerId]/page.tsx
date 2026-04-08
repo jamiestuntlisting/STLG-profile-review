@@ -57,6 +57,7 @@ export default function PerformerReviewPage() {
   const [adminStuntlistingUserId, setAdminStuntlistingUserId] = useState<number | undefined>();
   const [adminAccessToken, setAdminAccessToken] = useState<string | undefined>();
   const [skillReels, setSkillReels] = useState<{ skillName: string; level: string; category: string; url: string }[]>([]);
+  const [isListed, setIsListed] = useState<boolean | null>(null);
   const cameraRecorderRef = useRef<CameraRecorderHandle>(null);
 
   useEffect(() => {
@@ -115,6 +116,9 @@ export default function PerformerReviewPage() {
           }
           if (profileData.profile?.skillReels?.length > 0) {
             setSkillReels(profileData.profile.skillReels);
+          }
+          if (profileData.profile?.isListed !== undefined) {
+            setIsListed(profileData.profile.isListed);
           }
         } catch {
           // Non-critical
@@ -212,7 +216,17 @@ export default function PerformerReviewPage() {
         {/* Performer name */}
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <div className="p-6 border-b">
-            <h1 className="text-2xl font-bold text-gray-900">{performer.name}</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-gray-900">{performer.name}</h1>
+              <span className="text-sm text-gray-400">#{performer.stuntlistingUserId}</span>
+              {isListed !== null && (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  isListed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                }`}>
+                  {isListed ? "Listed" : "Unlisted"}
+                </span>
+              )}
+            </div>
             {performer.email && (
               <a
                 href={`mailto:${performer.email}`}

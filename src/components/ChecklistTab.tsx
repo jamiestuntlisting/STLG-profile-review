@@ -14,6 +14,7 @@ interface ChecklistData {
   meetsRequirements: boolean;
   pathA: boolean;
   pathB: boolean;
+  pathBMaybe: boolean;
 }
 
 interface ChecklistTabProps {
@@ -100,6 +101,8 @@ export default function ChecklistTab({ stuntlistingUserId }: ChecklistTabProps) 
       <div className={`p-4 rounded-xl border-2 ${
         checklist.meetsRequirements
           ? "border-green-300 bg-green-50"
+          : checklist.pathBMaybe
+          ? "border-yellow-300 bg-yellow-50"
           : "border-red-300 bg-red-50"
       }`}>
         <div className="flex items-center gap-2">
@@ -109,6 +112,13 @@ export default function ChecklistTab({ stuntlistingUserId }: ChecklistTabProps) 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span className="font-semibold text-green-800">Meets Listing Requirements</span>
+            </>
+          ) : checklist.pathBMaybe ? (
+            <>
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span className="font-semibold text-yellow-800">Maybe — Eligible via Path B</span>
             </>
           ) : (
             <>
@@ -121,11 +131,14 @@ export default function ChecklistTab({ stuntlistingUserId }: ChecklistTabProps) 
         </div>
         {checklist.meetsRequirements && (
           <p className="text-xs text-green-600 mt-1">
-            {checklist.pathA && checklist.pathB
-              ? "Meets both Path A and Path B"
-              : checklist.pathA
-              ? "Meets Path A (reel + sizes + skills + contact)"
-              : "Meets Path B (IMDb + contact)"}
+            {checklist.pathA && checklist.pathBMaybe
+              ? "Meets Path A and eligible for Path B"
+              : "Meets Path A (reel + sizes + skills + resume + contact)"}
+          </p>
+        )}
+        {!checklist.meetsRequirements && checklist.pathBMaybe && (
+          <p className="text-xs text-yellow-700 mt-1">
+            Has IMDb link + contact info. Eligible for listing but IMDb credits need manual verification.
           </p>
         )}
       </div>

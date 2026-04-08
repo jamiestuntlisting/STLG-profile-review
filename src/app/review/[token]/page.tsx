@@ -42,6 +42,7 @@ const FILTER_GROUPS = [
       { key: "performers", label: "Performers", description: "Users with performer role", icon: "🎬" },
       { key: "coordinators", label: "Coordinators", description: "Users with coordinator role", icon: "📋" },
       { key: "performer_coordinator", label: "Performer / Coordinator", description: "Users with both roles", icon: "🎬📋" },
+      { key: "stuntlisting_admins", label: "StuntListing Admins", description: "Admin accounts for testing", icon: "🔧" },
     ],
   },
   {
@@ -118,6 +119,12 @@ export default function QueueBuilderPage() {
         body: JSON.stringify({ filters: Array.from(selected), sessionId: session.id }),
       });
       if (!res.ok) throw new Error("Sync failed");
+      const data = await res.json();
+      if (data.added === 0) {
+        setError(data.message || "No performers found matching these filters.");
+        setSyncing(false);
+        return;
+      }
       router.push(`/review/${token}/queue`);
     } catch {
       setError("Failed to build queue. Please try again.");
@@ -155,7 +162,11 @@ export default function QueueBuilderPage() {
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-center text-sm text-red-700">
+          <div className={`mb-6 p-3 rounded-lg text-center text-sm ${
+            error.includes("No performers")
+              ? "bg-yellow-50 border border-yellow-200 text-yellow-800"
+              : "bg-red-50 border border-red-200 text-red-700"
+          }`}>
             {error}
           </div>
         )}
