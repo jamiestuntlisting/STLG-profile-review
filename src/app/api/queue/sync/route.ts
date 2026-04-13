@@ -39,6 +39,10 @@ function buildWhereConditions(filters: string[]): string[] {
     switch (filter) {
       case "recent":
         break;
+      case "most_recent":
+        break;
+      case "most_recent_unreviewed":
+        break;
       case "recently_signed_up":
         conditions.push("created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
         break;
@@ -207,9 +211,10 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const pool = getPool();
 
-    // Parse body for filters and session
+    // Parse body for filters, session, and profileId
     let filters: string[] = ["recent"];
     let sessionId: string | null = null;
+    let profileId: number | null = null;
     try {
       const body = await req.json();
       if (body.filters && Array.isArray(body.filters)) {
@@ -218,6 +223,10 @@ export async function POST(req: NextRequest) {
         filters = [body.filter];
       }
       sessionId = body.sessionId || null;
+      if (body.profileId) {
+        profileId = parseInt(body.profileId, 10);
+        if (isNaN(profileId)) profileId = null;
+      }
     } catch {
       // No body — use defaults
     }
@@ -235,12 +244,82 @@ export async function POST(req: NextRequest) {
     await Review.deleteMany({ sessionId: activeSession._id });
     await QueuedPerformer.deleteMany({});
 
+    // Handle profile ID lookup — single user by MySQL id
+    if (profileId) {
+      const [users] = await pool.query<UserRow[]>(
+        `SELECT id, first_name, last_name, email, height, weight, imdb, phone_number, resume_cv, registeration_steps_completed
+         FROM user WHERE id = ?`, [profileId]
+      );
+
+      if (users.length === 0) {
+        return NextResponse.json({ message: `No performer found with id=${profileId}`, added: 0 });
+      }
+
+      const scored = await batchComputeScores(pool, users);
+      const { user, hasStuntReel, hasSizes, hasStuntSkills, hasImdbLink, hasContactInfo, score } = scored[0];
+
+      const performer = await QueuedPerformer.create({
+        stuntlistingUserId: user.id,
+        name: `${user.first_name} ${user.last_name}`,
+        email: user.email,
+        stuntlistingProfileUrl: `https://www.stuntlisting.com/profile/${user.id}`,
+        resumeUrl: user.resume_cv || undefined,
+        signupDate: new Date(),
+        reviewStatus: "pending",
+        completenessScore: score,
+        checklistSnapshot: { hasStuntReel, hasSizes, hasStuntSkills, hasImdbLink, hasContactInfo },
+      });
+
+      await Review.create({
+        sessionId: activeSession._id,
+        performerId: performer._id,
+        adminId: activeSession.adminId,
+        status: "not_started",
+        feedbackToken: generateToken(),
+      });
+
+      return NextResponse.json({
+        message: `Loaded profile id=${profileId} (${user.first_name} ${user.last_name})`,
+        added: 1,
+        total: 1,
+      });
+    }
+
+    // Handle "most_recent_unreviewed" filter — exclude previously reviewed stuntlisting user IDs
+    const isMostRecentUnreviewed = filters.includes("most_recent_unreviewed");
+    let reviewedUserIds: number[] = [];
+    if (isMostRecentUnreviewed) {
+      // Get all stuntlisting user IDs that have been reviewed (completed) across all sessions
+      const reviewedPerformers = await QueuedPerformer.find(
+        { reviewStatus: "reviewed" },
+        { stuntlistingUserId: 1 }
+      ).lean();
+      // Also check Review model for completed reviews
+      const completedReviews = await Review.find({ status: "completed" }).populate("performerId", "stuntlistingUserId").lean();
+      const fromReviews = new Set<number>();
+      for (const r of completedReviews) {
+        const perf = r.performerId as unknown as { stuntlistingUserId?: number };
+        if (perf?.stuntlistingUserId) fromReviews.add(perf.stuntlistingUserId);
+      }
+      for (const p of reviewedPerformers) {
+        fromReviews.add(p.stuntlistingUserId);
+      }
+      reviewedUserIds = Array.from(fromReviews);
+    }
+
     const isUnlistedFilter = filters.includes("unlisted_almost_complete");
     const isListedIncompleteFilter = filters.includes("listed_mostly_incomplete");
+    const isMostRecent = filters.includes("most_recent");
     const needsScoring = isUnlistedFilter || isListedIncompleteFilter;
 
     // Build combined WHERE from all selected filters
     const conditions = buildWhereConditions(filters);
+
+    // For most_recent_unreviewed, add exclusion of already-reviewed user IDs
+    if (isMostRecentUnreviewed && reviewedUserIds.length > 0) {
+      conditions.push(`id NOT IN (${reviewedUserIds.join(",")})`);
+    }
+
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
     // For completeness-scored filters, fetch more to score and sort; otherwise normal limit

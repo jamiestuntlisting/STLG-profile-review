@@ -15,6 +15,8 @@ const FILTER_GROUPS = [
     label: "Activity",
     filters: [
       { key: "recent", label: "Recent & Unreviewed", description: "Newest performers not yet reviewed" },
+      { key: "most_recent", label: "50 Most Recent", description: "50 highest ID profiles" },
+      { key: "most_recent_unreviewed", label: "50 Most Recent Unreviewed", description: "50 highest ID profiles not yet reviewed" },
       { key: "recently_signed_up", label: "Recently Signed Up", description: "Signed up in the last 30 days" },
     ],
   },
@@ -76,6 +78,7 @@ export default function QueueBuilderPage() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [profileId, setProfileId] = useState("");
 
   useEffect(() => {
     async function validate() {
@@ -132,6 +135,30 @@ export default function QueueBuilderPage() {
     }
   };
 
+  const handleProfileIdLookup = async () => {
+    if (!session || !profileId.trim()) return;
+    setSyncing(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/queue/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: profileId.trim(), sessionId: session.id }),
+      });
+      if (!res.ok) throw new Error("Lookup failed");
+      const data = await res.json();
+      if (data.added === 0) {
+        setError(data.message || "No performer found with that ID.");
+        setSyncing(false);
+        return;
+      }
+      router.push(`/review/${token}/queue`);
+    } catch {
+      setError("Failed to look up profile. Please try again.");
+      setSyncing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -163,13 +190,42 @@ export default function QueueBuilderPage() {
 
         {error && (
           <div className={`mb-6 p-4 rounded-lg text-center text-base ${
-            error.includes("No performers")
+            error.includes("No performer")
               ? "bg-yellow-50 border border-yellow-200 text-yellow-800"
               : "bg-red-50 border border-red-200 text-red-700"
           }`}>
             {error}
           </div>
         )}
+
+        {/* Profile ID Lookup */}
+        <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            Review by Profile ID
+          </h3>
+          <div className="flex gap-3">
+            <input
+              type="number"
+              value={profileId}
+              onChange={(e) => setProfileId(e.target.value)}
+              placeholder="Enter profile ID (e.g. 33)"
+              disabled={syncing}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+              onKeyDown={(e) => { if (e.key === "Enter") handleProfileIdLookup(); }}
+            />
+            <button
+              onClick={handleProfileIdLookup}
+              disabled={!profileId.trim() || syncing}
+              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                profileId.trim() && !syncing
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              {syncing ? "Loading..." : "Look Up"}
+            </button>
+          </div>
+        </div>
 
         <div className="space-y-10">
           {FILTER_GROUPS.map((group, i) => (
