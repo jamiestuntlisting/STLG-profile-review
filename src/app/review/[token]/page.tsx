@@ -35,11 +35,16 @@ const FILTER_GROUPS = [
       { key: "unlisted", label: "Unlisted", description: "Currently hidden on StuntListing" },
       { key: "unlisted_almost_complete", label: "Unlisted, Almost Complete", description: "Hidden profiles nearly complete" },
       { key: "listed_mostly_incomplete", label: "Listed, Mostly Incomplete", description: "Visible but missing key info" },
-      { key: "has_first_last_name", label: "Has First & Last Name", description: "Both first and last name filled in" },
-      { key: "has_resume", label: "Has Resume", description: "Resume/CV uploaded" },
-      { key: "has_stunt_reel", label: "Has Stunt Reel", description: "Stunt reel uploaded" },
-      { key: "has_stunt_skills", label: "Has Stunt Skills", description: "Stunt skills listed" },
-      { key: "has_skill_reels", label: "Has Skill Reels", description: "Skill reels uploaded" },
+    ],
+  },
+  {
+    label: "Profile Has",
+    filters: [
+      { key: "has_first_last_name", label: "First & Last Name", description: "Both first and last name filled in" },
+      { key: "has_resume", label: "Resume", description: "Resume/CV uploaded" },
+      { key: "has_stunt_reel", label: "Stunt Reel", description: "Stunt reel uploaded" },
+      { key: "has_stunt_skills", label: "Stunt Skills", description: "Stunt skills listed" },
+      { key: "has_skill_reels", label: "Skill Reels", description: "Skill reels uploaded" },
     ],
   },
   {
