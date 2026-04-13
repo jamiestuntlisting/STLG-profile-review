@@ -55,6 +55,18 @@ function buildWhereConditions(filters: string[]): string[] {
       case "never_paid":
         conditions.push("(stripe_cus_id IS NULL)");
         break;
+      case "has_first_last_name":
+        conditions.push("(first_name IS NOT NULL AND first_name != '' AND last_name IS NOT NULL AND last_name != '')");
+        break;
+      case "has_resume":
+        conditions.push("(resume_cv IS NOT NULL AND resume_cv != '')");
+        break;
+      case "has_stunt_reel":
+        conditions.push("id IN (SELECT DISTINCT userId FROM stunt_reels)");
+        break;
+      case "has_stunt_skills":
+        conditions.push("id IN (SELECT DISTINCT userId FROM skill_sets)");
+        break;
       case "has_skill_reels":
         conditions.push("id IN (SELECT DISTINCT userId FROM skill_sets WHERE skill_url IS NOT NULL AND skill_url != '')");
         break;
